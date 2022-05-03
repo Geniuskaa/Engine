@@ -127,6 +127,7 @@ public abstract class SimulationFrame extends JFrame {
 		super(name);
 		
 		this.camera = new Camera();
+		this.camera.offsetY = -120.0;
 		this.camera.scale = scale;
 		
 		// create the world

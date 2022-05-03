@@ -33,6 +33,8 @@ import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
+import java.awt.*;
+
 /**
  * A scene where we create a suspension bridge via RevoluteJoints.
  * @author William Bittle
@@ -56,6 +58,7 @@ public class Bridge extends SimulationFrame {
 	protected void initializeWorld() {		
 		// Ground
 		SimulationBody ground = new SimulationBody();
+		ground.setColor(Color.red);
 		ground.addFixture(Geometry.createRectangle(50.0, 1.0));
 	    ground.translate(new Vector2(0.6875, -8.75));
 	    ground.setMass(MassType.INFINITE);

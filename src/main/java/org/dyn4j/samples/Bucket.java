@@ -24,14 +24,18 @@
  */
 package org.dyn4j.samples;
 
-import java.util.Random;
-
-import org.dyn4j.geometry.Convex;
-import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.MassType;
-import org.dyn4j.geometry.Vector2;
+import org.dyn4j.collision.CategoryFilter;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.*;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.util.*;
+import java.util.List;
 
 /**
  * A scene where we fill a "bucket" with shapes.
@@ -43,11 +47,21 @@ public class Bucket extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -3837218136220591307L;
 
+	private static final CategoryFilter ALL = new CategoryFilter(1, Long.MAX_VALUE);
+	private static final CategoryFilter BALL = new CategoryFilter(2, Long.MAX_VALUE);
+	private static final CategoryFilter PIN = new CategoryFilter(4, 1 | 2 | 8);
+	private static final CategoryFilter NOT_BALL = new CategoryFilter(8, 1 | 4);
+
+	private final BooleanStateKeyboardInputHandler f;
+
 	/**
 	 * Default constructor.
 	 */
 	public Bucket() {
-		super("Bucket", 32.0);
+		super("Bucket", 24.0);
+
+		this.f = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
+		this.f.install();
 	}
 	
 	/**
@@ -56,59 +70,75 @@ public class Bucket extends SimulationFrame {
 	protected void initializeWorld() {
 	    // Bottom
 		SimulationBody bucketBottom = new SimulationBody();
-		bucketBottom.addFixture(Geometry.createRectangle(15.0, 1.0));
+		bucketBottom.addFixture(Geometry.createRectangle(16.0, 0.5)); // ширина нижнего пола
 	    bucketBottom.setMass(MassType.INFINITE);
+		bucketBottom.translate(0.0, -3.0);
 	    world.addBody(bucketBottom);
 
 	    // Left-Side
 	    SimulationBody bucketLeft = new SimulationBody();
-	    bucketLeft.addFixture(Geometry.createRectangle(1.0, 15.0));
+	    bucketLeft.addFixture(Geometry.createRectangle(0.5, 15.0));
 	    bucketLeft.translate(new Vector2(-7.5, 7.0));
 	    bucketLeft.setMass(MassType.INFINITE);
 	    world.addBody(bucketLeft);
 
 	    // Right-Side
 	    SimulationBody bucketRight = new SimulationBody();
-	    bucketRight.addFixture(Geometry.createRectangle(1.0, 15.0));
+	    bucketRight.addFixture(Geometry.createRectangle(0.5, 15.0));
 	    bucketRight.translate(new Vector2(7.5, 7.0));
 	    bucketRight.setMass(MassType.INFINITE);
 	    world.addBody(bucketRight);
 
-	    Random r = new Random(23);
-	    double xmin = -7.0;
-	    double xmax = 7.0;
-	    double ymin = 0.5;
-	    double ymax = 7.0;
-	    double maxSize = 0.6;
-	    double minSize = 0.2;
-	    
-	    for (int i = 0; i < 200; i++) {
-	    	double size = r.nextDouble() * maxSize + minSize;
-	    	
-	    	Convex c = null;
-	    	
-	    	int type = r.nextInt(2);
-	    	switch (type) {
-		    	case 0:
-		    		c = Geometry.createRectangle(size, size);
-		    		break;
-		    	case 1:
-	    		default:
-		    		c = Geometry.createCircle(size * 0.5);
-		    		break;
-	    	}
-	    	
-	    	double x = r.nextDouble() * xmax * 2 + xmin;
-	    	double y = r.nextDouble() * ymax + ymin;
-	    	
-		    SimulationBody b = new SimulationBody();
-		    b.addFixture(c);
-		    b.translate(new Vector2(x, y));
-		    b.setMass(MassType.NORMAL);
-		    world.addBody(b);
-	    }
+
+
+		// TODO: добавить аргументы в функицию генерации препятствий
+		objectsGenerator();
+
+		bucketsGenerator(-7.0, 11);
+
+
+
+
+
+//		SimulationBody object1 = new SimulationBody();
+//		BodyFixture fixture1 = object1.addFixture(Geometry.createRectangle(2.5, 0.3), 0.2);
+//		fixture1.setFilter(ALL);
+//		object1.setMass(MassType.INFINITE);
+//		fixture1.getShape().rotate(Math.toDegrees(60));
+//		object1.translate(1.0, 5.5);
+//		world.addBody(object1);
+//
+//		SimulationBody object2 = new SimulationBody();
+//		BodyFixture fixture2 = object2.addFixture(Geometry.createRectangle(2.5, 0.3), 0.2);
+//		fixture2.setFilter(ALL);
+//		object2.setMass(MassType.INFINITE);
+//		fixture2.getShape().rotate(Math.toDegrees(-18));
+//		object2.translate(-2.5, 3.0);
+//		world.addBody(object2);
+
+
+
+
+
+		// Блок кода с генерацией щара
+		final double size = 1; // диаметр шара
+
+		Convex c = null;
+		c = Geometry.createCircle(size * 0.5); // Создание шара
+
+		double x = 0; // Координаты падения шара
+		double y = 18; // Координаты падения шара
+
+		SimulationBody b = new SimulationBody();
+		b.addFixture(c);
+		b.translate(new Vector2(x, y));
+		b.setMass(MassType.NORMAL);
+		world.addBody(b);
+
 	}
-	
+
+
+
 	/**
 	 * Entry point for the example application.
 	 * @param args command line arguments
@@ -116,5 +146,74 @@ public class Bucket extends SimulationFrame {
 	public static void main(String[] args) {
 		Bucket simulation = new Bucket();
 		simulation.run();
+	}
+
+	public void objectsGenerator(){
+		Random r = new Random(new Date().getTime());
+		double xmin = -7.0;
+		double xmax = 7.0;
+		double ymin = 0.5;
+		double ymax = 12.0;
+
+		for (int i=0; i < 20; i++) {
+//			double size = r.nextDouble() * maxSize + minSize;
+
+			int radius = r.nextInt(2);
+
+			double xx = r.nextDouble() * xmax * 2 + xmin;
+			double yy = r.nextDouble() * ymax + ymin;
+
+
+			SimulationBody object = new SimulationBody();
+			BodyFixture fixture = object.addFixture(Geometry.createRectangle(2.5, 0.3)); // Характеристика препятствий
+			fixture.setFilter(ALL);
+			object.setMass(MassType.INFINITE);
+			fixture.getShape().rotate(Math.toDegrees(radius)); // Поворот в градусах препятствий
+			object.translate(xx, yy); // Смешение препятствий относительно точки 0.0 ( пола )
+			world.addBody(object);
+		}
+	}
+
+	public void bucketsGenerator(double coordinateOfStartBuckets, int countOfBackets){
+		int n = countOfBackets;
+		double start = coordinateOfStartBuckets;
+		final double topOfBucket = -0.7;
+		final double bottomOfBucket = -1.7;
+
+		while (n > 0){ // это генерация стаканов
+			Vector2[] vectors = new Vector2[4];
+			for (int j = 0; j < 4; j++) {
+				switch (j) {
+					case 0:
+						vectors[j] = new Vector2(start, topOfBucket);
+						start += 0.3;
+						break;
+					case 1:
+						vectors[j] = new Vector2(start, bottomOfBucket);
+						start += 0.7;
+						break;
+					case 2:
+						vectors[j] = new Vector2(start, bottomOfBucket);
+						start += 0.3;
+						break;
+					case 3:
+						vectors[j] = new Vector2(start, topOfBucket);
+						break;
+				}
+			}
+
+			List<Link> links = Geometry.createLinks(
+					vectors
+					, false);
+
+			SimulationBody floor = new SimulationBody();
+			for (Link link : links) {
+				floor.addFixture(link);
+			}
+			floor.setMass(MassType.INFINITE);
+			this.world.addBody(floor);
+
+			n--;
+		}
 	}
 }

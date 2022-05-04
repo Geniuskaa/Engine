@@ -50,16 +50,12 @@ public class Bucket extends SimulationFrame {
 	private static final CategoryFilter PIN = new CategoryFilter(4, 1 | 2 | 8);
 	private static final CategoryFilter NOT_BALL = new CategoryFilter(8, 1 | 4);
 
-	private final BooleanStateKeyboardInputHandler f;
 
 	/**
 	 * Default constructor.
 	 */
 	public Bucket() {
 		super("Bucket", 24.0);
-
-		this.f = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
-		this.f.install();
 	}
 	
 	/**
@@ -104,27 +100,6 @@ public class Bucket extends SimulationFrame {
 		}catch (IllegalArgumentException e){
 			System.exit(1);
 		}
-
-
-
-
-
-
-//		SimulationBody object1 = new SimulationBody();
-//		BodyFixture fixture1 = object1.addFixture(Geometry.createRectangle(2.5, 0.3), 0.2);
-//		fixture1.setFilter(ALL);
-//		object1.setMass(MassType.INFINITE);
-//		fixture1.getShape().rotate(Math.toDegrees(60));
-//		object1.translate(1.0, 5.5);
-//		world.addBody(object1);
-//
-//		SimulationBody object2 = new SimulationBody();
-//		BodyFixture fixture2 = object2.addFixture(Geometry.createRectangle(2.5, 0.3), 0.2);
-//		fixture2.setFilter(ALL);
-//		object2.setMass(MassType.INFINITE);
-//		fixture2.getShape().rotate(Math.toDegrees(-18));
-//		object2.translate(-2.5, 3.0);
-//		world.addBody(object2);
 
 
 
@@ -214,7 +189,6 @@ public class Bucket extends SimulationFrame {
 			Vector2 firstVec;
 			Vector2 secondVec;
 
-//			while (true) {
 				double x = r.nextDouble() * xmax * 2 + xmin;
 				double y = r.nextDouble() * ymax + ymin;
 				firstVec = new Vector2(x, y);
@@ -223,14 +197,6 @@ public class Bucket extends SimulationFrame {
 				double yY = r.nextDouble() * ymax + ymin;
 				secondVec = new Vector2(xX, yY);
 
-//				if (x-xX > 2 || x-xX < 2){
-//					continue;
-//				}else if (y-yY > 2 || y-yY < 2){
-//					continue;
-//				}
-//
-//				break;
-//			}
 
 			list.add(new Vector2[]{firstVec, secondVec});
 		}

@@ -70,9 +70,9 @@ public class Bucket extends SimulationFrame {
 	protected void initializeWorld() {
 	    // Bottom
 		SimulationBody bucketBottom = new SimulationBody();
-		bucketBottom.addFixture(Geometry.createRectangle(16.0, 0.5)); // ширина нижнего пола
+		bucketBottom.addFixture(Geometry.createRectangle(14.5, 0.5)); // ширина нижнего пола
 	    bucketBottom.setMass(MassType.INFINITE);
-		bucketBottom.translate(0.0, -3.0);
+		bucketBottom.translate(0.0, -2.0);
 	    world.addBody(bucketBottom);
 
 	    // Left-Side
@@ -91,10 +91,16 @@ public class Bucket extends SimulationFrame {
 
 
 
-		// TODO: добавить аргументы в функицию генерации препятствий
-		objectsGenerator();
+		double[][] objects = randomGeneratorOfCoordinates(20);
 
-		bucketsGenerator(-7.0, 11);
+		objectsGenerator(20, objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
+
+		try {
+			bucketsGenerator(9);
+		}catch (IllegalArgumentException e){
+			System.exit(1);
+		}
+
 
 
 
@@ -148,37 +154,67 @@ public class Bucket extends SimulationFrame {
 		simulation.run();
 	}
 
-	public void objectsGenerator(){
+	public double[][] randomGeneratorOfCoordinates(int amountOfCoordinates){
 		Random r = new Random(new Date().getTime());
 		double xmin = -7.0;
 		double xmax = 7.0;
-		double ymin = 0.5;
+		double ymin = 1.0;
 		double ymax = 12.0;
+		ArrayList<double[]> list = new ArrayList<double[]>();
 
-		for (int i=0; i < 20; i++) {
+		for (int i=0; i < amountOfCoordinates; i++) {
 //			double size = r.nextDouble() * maxSize + minSize;
 
 			int radius = r.nextInt(2);
 
-			double xx = r.nextDouble() * xmax * 2 + xmin;
-			double yy = r.nextDouble() * ymax + ymin;
-
-
-			SimulationBody object = new SimulationBody();
-			BodyFixture fixture = object.addFixture(Geometry.createRectangle(2.5, 0.3)); // Характеристика препятствий
-			fixture.setFilter(ALL);
-			object.setMass(MassType.INFINITE);
-			fixture.getShape().rotate(Math.toDegrees(radius)); // Поворот в градусах препятствий
-			object.translate(xx, yy); // Смешение препятствий относительно точки 0.0 ( пола )
-			world.addBody(object);
+			double x = r.nextDouble() * xmax * 2 + xmin;
+			double y = r.nextDouble() * ymax + ymin;
+			list.add(new double[]{x, y, radius});
 		}
+
+		double[][] objects = new double[list.size()][3];
+		for (int i=0; i < objects.length; i++){
+			objects[i] = list.get(i);
+		}
+
+		return objects;
 	}
 
-	public void bucketsGenerator(double coordinateOfStartBuckets, int countOfBackets){
+	public void objectsGenerator(int amountOfObjects, double[][] objectsCoordinates){
+			final double widthOfObject = 2.5;
+			final double heightOfObject = 0.3;
+
+			for (int i=0; i < amountOfObjects; i++){
+				SimulationBody object = new SimulationBody();
+				BodyFixture fixture = object.addFixture(Geometry.createRectangle(widthOfObject, heightOfObject)); // Характеристика препятствий
+				fixture.setFilter(ALL);
+				object.setMass(MassType.INFINITE);
+				fixture.getShape().rotate(Math.toDegrees(objectsCoordinates[i][2])); // Поворот в градусах препятствий
+				object.translate(objectsCoordinates[i][0], objectsCoordinates[i][1]); // Смешение препятствий относительно точки 0.0 ( пола )
+				world.addBody(object);
+
+			}
+
+
+	}
+
+	public void bucketsGenerator(int countOfBackets){
+		final double coordinateOfStartBuckets = -7.25;
+		final double coordinateOfEndBuckets = 7.25;
+		final double minWidthOfBucket = 1.3;
+
+		final double topOfBucket = -0.6;
+		final double bottomOfBucket = -1.7;
+
+		double widthOfBottom = coordinateOfEndBuckets - coordinateOfStartBuckets;
+		double widthOfEachBucket = widthOfBottom/countOfBackets;
+
+		if (widthOfEachBucket < minWidthOfBucket){ // Если стаканы слишком узкие - стаканы не сгенерируются
+			throw new IllegalArgumentException();
+		}
+
 		int n = countOfBackets;
 		double start = coordinateOfStartBuckets;
-		final double topOfBucket = -0.7;
-		final double bottomOfBucket = -1.7;
 
 		while (n > 0){ // это генерация стаканов
 			Vector2[] vectors = new Vector2[4];
@@ -186,15 +222,15 @@ public class Bucket extends SimulationFrame {
 				switch (j) {
 					case 0:
 						vectors[j] = new Vector2(start, topOfBucket);
-						start += 0.3;
+						start += widthOfEachBucket/4;
 						break;
 					case 1:
 						vectors[j] = new Vector2(start, bottomOfBucket);
-						start += 0.7;
+						start += widthOfEachBucket/2;
 						break;
 					case 2:
 						vectors[j] = new Vector2(start, bottomOfBucket);
-						start += 0.3;
+						start += widthOfEachBucket/4;
 						break;
 					case 3:
 						vectors[j] = new Vector2(start, topOfBucket);

@@ -93,7 +93,7 @@ public class Bucket extends SimulationFrame {
 
 		double[][] objects = randomGeneratorOfCoordinates(20);
 
-		objectsGenerator(20, objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
+		objectsGenerator(objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
 
 		try {
 			bucketsGenerator(9);
@@ -180,11 +180,11 @@ public class Bucket extends SimulationFrame {
 		return objects;
 	}
 
-	public void objectsGenerator(int amountOfObjects, double[][] objectsCoordinates){
+	public void objectsGenerator(double[][] objectsCoordinates){
 			final double widthOfObject = 2.5;
 			final double heightOfObject = 0.3;
 
-			for (int i=0; i < amountOfObjects; i++){
+			for (int i=0; i < objectsCoordinates.length; i++){
 				SimulationBody object = new SimulationBody();
 				BodyFixture fixture = object.addFixture(Geometry.createRectangle(widthOfObject, heightOfObject)); // Характеристика препятствий
 				fixture.setFilter(ALL);

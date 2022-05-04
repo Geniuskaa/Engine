@@ -27,12 +27,10 @@ package org.dyn4j.samples;
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.*;
-import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
@@ -70,33 +68,39 @@ public class Bucket extends SimulationFrame {
 	protected void initializeWorld() {
 	    // Bottom
 		SimulationBody bucketBottom = new SimulationBody();
-		bucketBottom.addFixture(Geometry.createRectangle(14.5, 0.5)); // ширина нижнего пола
+		bucketBottom.addFixture(Geometry.createRectangle(20.5, 0.5)); // ширина нижнего пола
 	    bucketBottom.setMass(MassType.INFINITE);
 		bucketBottom.translate(0.0, -2.0);
 	    world.addBody(bucketBottom);
 
 	    // Left-Side
 	    SimulationBody bucketLeft = new SimulationBody();
-	    bucketLeft.addFixture(Geometry.createRectangle(0.5, 15.0));
-	    bucketLeft.translate(new Vector2(-7.5, 7.0));
+	    bucketLeft.addFixture(Geometry.createRectangle(0.5, 18.0));
+	    bucketLeft.translate(new Vector2(-11.0, 8.25));
 	    bucketLeft.setMass(MassType.INFINITE);
 	    world.addBody(bucketLeft);
 
 	    // Right-Side
 	    SimulationBody bucketRight = new SimulationBody();
-	    bucketRight.addFixture(Geometry.createRectangle(0.5, 15.0));
-	    bucketRight.translate(new Vector2(7.5, 7.0));
+	    bucketRight.addFixture(Geometry.createRectangle(0.5, 18.0));
+	    bucketRight.translate(new Vector2(11.0, 8.25));
 	    bucketRight.setMass(MassType.INFINITE);
 	    world.addBody(bucketRight);
 
 
 
-		double[][] objects = randomGeneratorOfCoordinates(20);
+//		double[][] objects = randomGeneratorOfCoordinates(20);
+		Vector2[][] vectors = randomGeneratorOfObjectVectors(20);
 
-		objectsGenerator(objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
+		// Версия с объектами с одинарной координатой
+//		objectsGenerator(objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
+
+		// Подходящая под условия Сергея версия
+		objectsGeneratorBasedOnVectors(vectors);
+
 
 		try {
-			bucketsGenerator(9);
+			bucketsGenerator(5);
 		}catch (IllegalArgumentException e){
 			System.exit(1);
 		}
@@ -133,7 +137,7 @@ public class Bucket extends SimulationFrame {
 		c = Geometry.createCircle(size * 0.5); // Создание шара
 
 		double x = 0; // Координаты падения шара
-		double y = 18; // Координаты падения шара
+		double y = 20; // Координаты падения шара
 
 		SimulationBody b = new SimulationBody();
 		b.addFixture(c);
@@ -142,7 +146,6 @@ public class Bucket extends SimulationFrame {
 		world.addBody(b);
 
 	}
-
 
 
 	/**
@@ -154,12 +157,12 @@ public class Bucket extends SimulationFrame {
 		simulation.run();
 	}
 
-	public double[][] randomGeneratorOfCoordinates(int amountOfCoordinates){
+	private double[][] randomGeneratorOfCoordinates(int amountOfCoordinates){
 		Random r = new Random(new Date().getTime());
-		double xmin = -7.0;
-		double xmax = 7.0;
+		double xmin = -10.0;
+		double xmax = 10.0;
 		double ymin = 1.0;
-		double ymax = 12.0;
+		double ymax = 15.0;
 		ArrayList<double[]> list = new ArrayList<double[]>();
 
 		for (int i=0; i < amountOfCoordinates; i++) {
@@ -180,7 +183,7 @@ public class Bucket extends SimulationFrame {
 		return objects;
 	}
 
-	public void objectsGenerator(double[][] objectsCoordinates){
+	private void objectsGenerator(double[][] objectsCoordinates){
 			final double widthOfObject = 2.5;
 			final double heightOfObject = 0.3;
 
@@ -198,9 +201,73 @@ public class Bucket extends SimulationFrame {
 
 	}
 
-	public void bucketsGenerator(int countOfBackets){
-		final double coordinateOfStartBuckets = -7.25;
-		final double coordinateOfEndBuckets = 7.25;
+	private Vector2[][] randomGeneratorOfObjectVectors(int amountOfCoordinates) {
+		Random r = new Random(new Date().getTime());
+		double xmin = -10.0;
+		double xmax = 10.0;
+		double ymin = 1.0;
+		double ymax = 15.0;
+
+		ArrayList<Vector2[]> list = new ArrayList<Vector2[]>();
+
+		for (int i=0; i < amountOfCoordinates; i++) {
+			Vector2 firstVec;
+			Vector2 secondVec;
+
+//			while (true) {
+				double x = r.nextDouble() * xmax * 2 + xmin;
+				double y = r.nextDouble() * ymax + ymin;
+				firstVec = new Vector2(x, y);
+
+				double xX = r.nextDouble() * xmax * 2 + xmin;
+				double yY = r.nextDouble() * ymax + ymin;
+				secondVec = new Vector2(xX, yY);
+
+//				if (x-xX > 2 || x-xX < 2){
+//					continue;
+//				}else if (y-yY > 2 || y-yY < 2){
+//					continue;
+//				}
+//
+//				break;
+//			}
+
+			list.add(new Vector2[]{firstVec, secondVec});
+		}
+
+		Vector2[][] objects = new Vector2[list.size()][2];
+		for (int i=0; i < objects.length; i++){
+			objects[i] = list.get(i);
+		}
+
+		return objects;
+	}
+
+	private void objectsGeneratorBasedOnVectors(Vector2[][] vectors) {
+		int size = vectors.length;
+
+		for (int i=0; i < size; i++) {
+			Vector2[] vec = new Vector2[2];
+			vec[0] = vectors[i][0];
+			vec[1] = vectors[i][1];
+
+			List<Link> links = Geometry.createLinks(
+					vec
+					, false);
+
+			SimulationBody floor = new SimulationBody();
+			for (Link link : links) {
+				floor.addFixture(link);
+			}
+			floor.setMass(MassType.INFINITE);
+			this.world.addBody(floor);
+
+		}
+	}
+
+	private void bucketsGenerator(int countOfBackets){
+		final double coordinateOfStartBuckets = -10.75;
+		final double coordinateOfEndBuckets = 10.75;
 		final double minWidthOfBucket = 1.3;
 
 		final double topOfBucket = -0.6;

@@ -24,6 +24,7 @@
  */
 package org.dyn4j.samples;
 
+import org.dyn4j.collision.AxisAlignedBounds;
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.*;
@@ -62,6 +63,9 @@ public class Bucket extends SimulationFrame {
 	 * Creates game objects and adds them to the world.
 	 */
 	protected void initializeWorld() {
+
+
+		this.world.setGravity(new Vector2(0, -20.0)); // Пока не нашел функцию изменения импулься шарика, поэтому пока можно изменять гравитацию
 	    // Bottom
 		SimulationBody bucketBottom = new SimulationBody();
 		bucketBottom.addFixture(Geometry.createRectangle(20.5, 0.5)); // ширина нижнего пола
@@ -96,7 +100,7 @@ public class Bucket extends SimulationFrame {
 
 
 		try {
-			bucketsGenerator(5);
+			bucketsGenerator(7);
 		}catch (IllegalArgumentException e){
 			System.exit(1);
 		}
@@ -112,7 +116,7 @@ public class Bucket extends SimulationFrame {
 		c = Geometry.createCircle(size * 0.5); // Создание шара
 
 		double x = 0; // Координаты падения шара
-		double y = 20; // Координаты падения шара
+		double y = 24; // Координаты падения шара
 
 		SimulationBody b = new SimulationBody();
 		b.addFixture(c);

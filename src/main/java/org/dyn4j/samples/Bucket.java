@@ -51,12 +51,13 @@ public class Bucket extends SimulationFrame {
 	private static final CategoryFilter PIN = new CategoryFilter(4, 1 | 2 | 8);
 	private static final CategoryFilter NOT_BALL = new CategoryFilter(8, 1 | 4);
 
+	private SimulationBody ball;
 
 	/**
 	 * Default constructor.
 	 */
 	public Bucket() {
-		super("Bucket", 24.0);
+		super("Bucket", 16.0);
 	}
 	
 	/**
@@ -65,8 +66,10 @@ public class Bucket extends SimulationFrame {
 	protected void initializeWorld() {
 
 
-		this.world.setGravity(new Vector2(0, -20.0)); // Пока не нашел функцию изменения импулься шарика, поэтому пока можно изменять гравитацию
-	    // Bottom
+//		this.world.setGravity(new Vector2(0, -3.0)); // Пока не нашел функцию изменения импулься шарика, поэтому пока можно изменять гравитацию
+		// UPD: Нашел функцию для изменения начального импульса, тогда не придется менять гравитацию по умолчанию будет земной
+
+		// Bottom
 		SimulationBody bucketBottom = new SimulationBody();
 		bucketBottom.addFixture(Geometry.createRectangle(20.5, 0.5)); // ширина нижнего пола
 	    bucketBottom.setMass(MassType.INFINITE);
@@ -118,11 +121,14 @@ public class Bucket extends SimulationFrame {
 		double x = 0; // Координаты падения шара
 		double y = 24; // Координаты падения шара
 
-		SimulationBody b = new SimulationBody();
-		b.addFixture(c);
-		b.translate(new Vector2(x, y));
-		b.setMass(MassType.NORMAL);
-		world.addBody(b);
+		ball = new SimulationBody();
+		ball.addFixture(c);
+		ball.translate(new Vector2(x, y));
+		ball.setMass(MassType.NORMAL);
+		world.addBody(ball);
+
+		// Функция для изменения импульса шара, чем меньше значение аргумента product(), тем сильнее импульс вниз
+		ball.applyForce(new Vector2(ball.getTransform().getRotationAngle() + Math.PI * 0.5).product(-2000));
 
 	}
 

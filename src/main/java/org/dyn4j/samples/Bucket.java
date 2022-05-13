@@ -51,7 +51,12 @@ public class Bucket extends SimulationFrame {
 	private static final CategoryFilter PIN = new CategoryFilter(4, 1 | 2 | 8);
 	private static final CategoryFilter NOT_BALL = new CategoryFilter(8, 1 | 4);
 
-	private SimulationBody ball;
+	public static BodyFixture fixture;
+
+	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
+	private static SimulationBody ball;
+
+	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
 
 	/**
 	 * Default constructor.
@@ -93,7 +98,7 @@ public class Bucket extends SimulationFrame {
 
 
 //		double[][] objects = randomGeneratorOfCoordinates(20);
-		Vector2[][] vectors = randomGeneratorOfObjectVectors(20);
+		Vector2[][] vectors = randomGeneratorOfObjectVectors(5);
 
 		// Версия с объектами с одинарной координатой
 //		objectsGenerator(objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
@@ -109,6 +114,17 @@ public class Bucket extends SimulationFrame {
 		}
 
 
+		//
+//		ball = new SimulationBody();
+//		fixture = new BodyFixture(Geometry.createCircle(0.5));
+////		fixture.setDensity(194.82);
+//		fixture.setRestitution(0.5);
+//		fixture.setFilter(BALL);
+//		ball.addFixture(fixture);
+//		ball.setMass(MassType.NORMAL);
+//		ball.translate(ballCoordinates);
+//		this.world.addBody(ball);
+		//
 
 
 
@@ -127,11 +143,29 @@ public class Bucket extends SimulationFrame {
 		ball.setMass(MassType.NORMAL);
 		world.addBody(ball);
 
-		// Функция для изменения импульса шара, чем меньше значение аргумента product(), тем сильнее импульс вниз
-		ball.applyForce(new Vector2(ball.getTransform().getRotationAngle() + Math.PI * 0.5).product(-2000));
+//		 Функция для изменения импульса шара, чем меньше значение аргумента product(), тем сильнее импульс вниз
+		ball.applyForce(new Vector2(ball.getTransform().getRotationAngle() + Math.PI * 0.5).product(-500));
 
 	}
 
+	@Override
+	protected void handleEvents() {
+		super.handleEvents();
+
+		if (ball.getWorldCenter().y < -1.0) {
+
+
+			int n = checkBox.size();
+
+			for (int j=0; j < n; j++){
+				if (checkBox.get(j)[0].x <= ball.getWorldCenter().x && ball.getWorldCenter().x <= checkBox.get(j)[1].x) {
+					System.out.println("Мяч попал в стакан номер: " + (j+1));
+					System.exit(2);
+				}
+			}
+		}
+
+	}
 
 	/**
 	 * Entry point for the example application.
@@ -261,6 +295,8 @@ public class Bucket extends SimulationFrame {
 
 		while (n > 0){ // это генерация стаканов
 			Vector2[] vectors = new Vector2[4];
+			Vector2[] checkBoxCoordinates = new Vector2[2];
+
 			for (int j = 0; j < 4; j++) {
 				switch (j) {
 					case 0:
@@ -269,10 +305,12 @@ public class Bucket extends SimulationFrame {
 						break;
 					case 1:
 						vectors[j] = new Vector2(start, bottomOfBucket);
+						checkBoxCoordinates[0] = vectors[j];
 						start += widthOfEachBucket/2;
 						break;
 					case 2:
 						vectors[j] = new Vector2(start, bottomOfBucket);
+						checkBoxCoordinates[1] = vectors[j];
 						start += widthOfEachBucket/4;
 						break;
 					case 3:
@@ -280,6 +318,8 @@ public class Bucket extends SimulationFrame {
 						break;
 				}
 			}
+
+			checkBox.add(checkBoxCoordinates);
 
 			List<Link> links = Geometry.createLinks(
 					vectors

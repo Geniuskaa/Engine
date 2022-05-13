@@ -142,7 +142,7 @@ public class CodeExporter {
 		
 		// output world settings
 		sb.append(NEW_LINE);
-		Vector2 g = world.getGravity();
+		Vector2 g = world.getGravity(); //
 		if (g == World.EARTH_GRAVITY || g.equals(0.0, -9.8)) {
 			// don't output anything since its the default
 		} else if (g == World.ZERO_GRAVITY || g.isZero()) {

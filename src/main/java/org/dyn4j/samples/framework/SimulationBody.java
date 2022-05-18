@@ -41,9 +41,9 @@ public class SimulationBody extends Body {
 	 * @param g the graphics object to render to
 	 * @param scale the scaling factor
 	 */
-	public void render(Graphics2D g, double scale) {
-		this.render(g, scale, this.color);
-	}
+//	public void render(Graphics2D g, double scale) {
+//		this.render(g, scale, this.color);
+//	}
 	
 	/**
 	 * Draws the body.
@@ -56,23 +56,23 @@ public class SimulationBody extends Body {
 	public void render(Graphics2D g, double scale, Color color) {
 		// point radius
 		final int pr = 4;
-		
+
 		// save the original transform
 		AffineTransform ot = g.getTransform();
-		
+
 		// transform the coordinate system from world coordinates to local coordinates
 		AffineTransform lt = new AffineTransform();
 		lt.translate(this.transform.getTranslationX() * scale, this.transform.getTranslationY() * scale);
 		lt.rotate(this.transform.getRotationAngle());
-		
+
 		// apply the transform
 		g.transform(lt);
-		
+
 		// loop over all the body fixtures for this body
 		for (BodyFixture fixture : this.fixtures) {
 			this.renderFixture(g, scale, fixture, color);
 		}
-		
+
 		// draw a center point
 		Ellipse2D.Double ce = new Ellipse2D.Double(
 				this.getLocalCenter().x * scale - pr * 0.5,
@@ -83,7 +83,7 @@ public class SimulationBody extends Body {
 		g.fill(ce);
 		g.setColor(Color.DARK_GRAY);
 		g.draw(ce);
-		
+
 		// set the original transform
 		g.setTransform(ot);
 	}
@@ -98,12 +98,12 @@ public class SimulationBody extends Body {
 	protected void renderFixture(Graphics2D g, double scale, BodyFixture fixture, Color color) {
 		// get the shape on the fixture
 		Convex convex = fixture.getShape();
-		
+
 		// brighten the color if asleep
 		if (this.isAtRest()) {
 			color = color.brighter();
 		}
-		
+
 		// render the fixture
 		Graphics2DRenderer.render(g, convex, scale, color);
 	}

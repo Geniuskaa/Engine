@@ -97,12 +97,13 @@ public class Bucket extends SimulationFrame {
 
 
 
-//		double[][] objects = randomGeneratorOfCoordinates(20);
-		Vector2[][] vectors = randomGeneratorOfObjectVectors(5);
+//		double[][] objects = randomGeneratorOfCoordinates(20); генератор под закомиченную ф-цию
 
 		// Версия с объектами с одинарной координатой
 //		objectsGenerator(objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
 
+
+		Vector2[][] vectors = randomGeneratorOfObjectVectors(5);
 		// Подходящая под условия Сергея версия
 		objectsGeneratorBasedOnVectors(vectors);
 
@@ -114,7 +115,7 @@ public class Bucket extends SimulationFrame {
 		}
 
 
-		//
+		//эта версия с физикой имеет особую специфику (спросите Эмиля, прежде чем юзать)
 //		ball = new SimulationBody();
 //		fixture = new BodyFixture(Geometry.createCircle(0.5));
 ////		fixture.setDensity(194.82);

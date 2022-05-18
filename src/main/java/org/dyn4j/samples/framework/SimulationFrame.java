@@ -488,9 +488,9 @@ public abstract class SimulationFrame extends JFrame {
 	
 	/**
 	 * Renders the body.
-	 * @param g the graphics object to render to
-	 * @param elapsedTime the elapsed time from the last update
-	 * @param body the body to render
+//	 * @param g the graphics object to render to
+//	 * @param elapsedTime the elapsed time from the last update
+//	 * @param body the body to render
 	 */
 	protected void render(Graphics2D g, double elapsedTime, SimulationBody body) {
 		// if the object is selected, draw it magenta
@@ -498,8 +498,8 @@ public abstract class SimulationFrame extends JFrame {
 		if (this.picking.isEnabled() && this.picking.isActive() && this.picking.getBody() == body) {
 			color = Color.MAGENTA;
 		}
-		
-		// draw the object 
+
+		// draw the object
 		body.render(g, this.camera.scale, color);
 	}
 	

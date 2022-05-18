@@ -160,7 +160,7 @@ public class Bucket extends SimulationFrame {
 
 			for (int j=0; j < n; j++){
 				if (checkBox.get(j)[0].x <= ball.getWorldCenter().x && ball.getWorldCenter().x <= checkBox.get(j)[1].x) {
-					System.out.println("Мяч попал в стакан номер: " + (j+1));
+					System.out.println("Мяч попал в стакан номер: " + (j+1)); // Здесь сделать вывод как и куда удобно
 					System.exit(2);
 				}
 			}

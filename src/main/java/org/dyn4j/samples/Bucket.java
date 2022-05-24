@@ -24,15 +24,15 @@
  */
 package org.dyn4j.samples;
 
-import org.dyn4j.collision.AxisAlignedBounds;
+import com.google.gson.Gson;
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.*;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
-import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 
-import java.awt.event.KeyEvent;
+import java.io.*;
+
 import java.util.*;
 import java.util.List;
 
@@ -54,10 +54,17 @@ public class Bucket extends SimulationFrame {
 	public static BodyFixture fixture;
 
 	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
-	private static SimulationBody ball;
+//	private static SimulationBody ball;
+	private static final Integer countOfSimulations = 7;
+	private static SimulationBody[] balls = new SimulationBody[countOfSimulations];
 
 	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
+	private static ArrayList<Integer> gameResult = new ArrayList<>();
+	private static final Integer countOfbackets = 6;
+	private static Result result = new Result();
 
+
+	private static final Integer BASE_INDENT = 25;
 	/**
 	 * Default constructor.
 	 */
@@ -68,54 +75,123 @@ public class Bucket extends SimulationFrame {
 	/**
 	 * Creates game objects and adds them to the world.
 	 */
+
+	class Dot {
+		Double x;
+		Double y;
+
+		public Dot(Double x, Double y) {
+			this.x = x;
+			this.y = y;
+		}
+	}
+
+	class Line {
+		Dot dot1;
+		Dot dot2;
+
+		public Line(Dot dot1, Dot dot2) {
+			this.dot1 = dot1;
+			this.dot2 = dot2;
+		}
+	}
+
+
+
+	static class Map {
+		List<Line> lines;
+	}
+
+	static class Result {
+		Map map;
+		Integer results;
+	}
+
 	protected void initializeWorld() {
+
+		SimulationBody b = new SimulationBody();
+		b.addFixture(Geometry.createRectangle(28.5, 0.5)); // ширина нижнего пола
+		b.setMass(MassType.INFINITE);
+		b.translate(0.0, 30.0);
+		world.addBody(b);
+
+		// Left-Side
+		SimulationBody bl = new SimulationBody();
+		bl.addFixture(Geometry.createRectangle(0.5, 18.0));
+		bl.translate(new Vector2(-13.0, 38.25));
+		bl.setMass(MassType.INFINITE);
+		world.addBody(bl);
+
+		// Right-Side
+		SimulationBody br = new SimulationBody();
+		br.addFixture(Geometry.createRectangle(0.5, 18.0));
+		br.translate(new Vector2(13.0, 38.25));
+		br.setMass(MassType.INFINITE);
+		world.addBody(br);
 
 
 //		this.world.setGravity(new Vector2(0, -3.0)); // Пока не нашел функцию изменения импулься шарика, поэтому пока можно изменять гравитацию
 		// UPD: Нашел функцию для изменения начального импульса, тогда не придется менять гравитацию по умолчанию будет земной
 
-		// Bottom
-		SimulationBody bucketBottom = new SimulationBody();
-		bucketBottom.addFixture(Geometry.createRectangle(20.5, 0.5)); // ширина нижнего пола
-	    bucketBottom.setMass(MassType.INFINITE);
-		bucketBottom.translate(0.0, -2.0);
-	    world.addBody(bucketBottom);
+		Vector2[][] vectors = randomGeneratorOfObjectVectors(3);
+		for (int i=1; i<countOfSimulations; i++){
 
-	    // Left-Side
-	    SimulationBody bucketLeft = new SimulationBody();
-	    bucketLeft.addFixture(Geometry.createRectangle(0.5, 18.0));
-	    bucketLeft.translate(new Vector2(-11.0, 8.25));
-	    bucketLeft.setMass(MassType.INFINITE);
-	    world.addBody(bucketLeft);
+			int indent = BASE_INDENT*i;
+			// Bottom
+			SimulationBody bucketBottom = new SimulationBody();
+			bucketBottom.addFixture(Geometry.createRectangle(20.5, 0.5)); // ширина нижнего пола
+			bucketBottom.setMass(MassType.INFINITE);
+			bucketBottom.translate(0.0 + indent, -2.0);
+			world.addBody(bucketBottom);
 
-	    // Right-Side
-	    SimulationBody bucketRight = new SimulationBody();
-	    bucketRight.addFixture(Geometry.createRectangle(0.5, 18.0));
-	    bucketRight.translate(new Vector2(11.0, 8.25));
-	    bucketRight.setMass(MassType.INFINITE);
-	    world.addBody(bucketRight);
+			// Left-Side
+			SimulationBody bucketLeft = new SimulationBody();
+			bucketLeft.addFixture(Geometry.createRectangle(0.5, 18.0));
+			bucketLeft.translate(new Vector2(-11.0 + indent, 8.25));
+			bucketLeft.setMass(MassType.INFINITE);
+			world.addBody(bucketLeft);
+
+			// Right-Side
+			SimulationBody bucketRight = new SimulationBody();
+			bucketRight.addFixture(Geometry.createRectangle(0.5, 18.0));
+			bucketRight.translate(new Vector2(11.0 + indent, 8.25));
+			bucketRight.setMass(MassType.INFINITE);
+			world.addBody(bucketRight);
+
+			SimulationBody leftHelper = new SimulationBody();
+			leftHelper.addFixture(Geometry.createRectangle(0.3, 2.5));
+			leftHelper.translate(new Vector2(-10.8 + indent, -0.7));
+			leftHelper.setMass(MassType.INFINITE);
+			world.addBody(leftHelper);
+
+			SimulationBody rightHelper = new SimulationBody();
+			rightHelper.addFixture(Geometry.createRectangle(0.3, 2.5));
+			rightHelper.translate(new Vector2(10.8 + indent, -0.7));
+			rightHelper.setMass(MassType.INFINITE);
+			world.addBody(rightHelper);
+
 
 
 
 //		double[][] objects = randomGeneratorOfCoordinates(20); генератор под закомиченную ф-цию
 
-		// Версия с объектами с одинарной координатой
+			// Версия с объектами с одинарной координатой
 //		objectsGenerator(objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
 
 
-		Vector2[][] vectors = randomGeneratorOfObjectVectors(5);
-		// Подходящая под условия Сергея версия
-		objectsGeneratorBasedOnVectors(vectors);
+
+			// Подходящая под условия Сергея версия
+			objectsGeneratorBasedOnVectors(vectors, indent);
 
 
-		try {
-			bucketsGenerator(7);
-		}catch (IllegalArgumentException e){
-			System.exit(1);
-		}
+			try {
+				bucketsGenerator(countOfbackets, indent);
+			}catch (IllegalArgumentException e){
+				System.exit(1);
+			}
 
 
-		//эта версия с физикой имеет особую специфику (спросите Эмиля, прежде чем юзать)
+			//эта версия с физикой имеет особую специфику (спросите Эмиля, прежде чем юзать)
 //		ball = new SimulationBody();
 //		fixture = new BodyFixture(Geometry.createCircle(0.5));
 ////		fixture.setDensity(194.82);
@@ -125,27 +201,28 @@ public class Bucket extends SimulationFrame {
 //		ball.setMass(MassType.NORMAL);
 //		ball.translate(ballCoordinates);
 //		this.world.addBody(ball);
-		//
+			//
 
 
 
-		// Блок кода с генерацией щара
-		final double size = 1; // диаметр шара
+			// Блок кода с генерацией щара
+			final double size = 1; // диаметр шара
 
-		Convex c = null;
-		c = Geometry.createCircle(size * 0.5); // Создание шара
+			Convex c = null;
+			c = Geometry.createCircle(size * 0.5); // Создание шара
 
-		double x = 0; // Координаты падения шара
-		double y = 24; // Координаты падения шара
+			double x = 0 + (indent); // Координаты падения шара
+			double y = 24; // Координаты падения шара
 
-		ball = new SimulationBody();
-		ball.addFixture(c);
-		ball.translate(new Vector2(x, y));
-		ball.setMass(MassType.NORMAL);
-		world.addBody(ball);
+			balls[i] = new SimulationBody();
+			balls[i].addFixture(c);
+			balls[i].translate(new Vector2(x, y));
+			balls[i].setMass(MassType.NORMAL);
+			world.addBody(balls[i]);
 
 //		 Функция для изменения импульса шара, чем меньше значение аргумента product(), тем сильнее импульс вниз
-		ball.applyForce(new Vector2(ball.getTransform().getRotationAngle() + Math.PI * 0.5).product(-500));
+			balls[i].applyForce(new Vector2(balls[i].getTransform().getRotationAngle() + Math.PI * 0.5).product(-500));
+		}
 
 	}
 
@@ -153,18 +230,62 @@ public class Bucket extends SimulationFrame {
 	protected void handleEvents() {
 		super.handleEvents();
 
-		if (ball.getWorldCenter().y < -1.0) {
 
 
-			int n = checkBox.size();
+		for (int i=0; i < countOfSimulations; i++){
+			SimulationBody ball = balls[i];
 
-			for (int j=0; j < n; j++){
-				if (checkBox.get(j)[0].x <= ball.getWorldCenter().x && ball.getWorldCenter().x <= checkBox.get(j)[1].x) {
-					System.out.println("Мяч попал в стакан номер: " + (j+1)); // Здесь сделать вывод как и куда удобно
-					System.exit(2);
+			if(ball == null) continue;
+
+
+			if (ball.getWorldCenter().y < -1) {
+				int n = checkBox.size();
+
+				for (int j=0; j < n; j++){
+					if (checkBox.get(j)[0].x <= ball.getWorldCenter().x && ball.getWorldCenter().x <= checkBox.get(j)[1].x) {
+						Integer bucketNum = j%countOfbackets+1;
+						System.out.println("Мяч попал в стакан номер: " + bucketNum); // Здесь сделать вывод как и куда удобно
+
+						ball.translate(-25,10); // - BASE_INDENT*(j/countOfbackets)
+						ball.setEnabled(false);
+
+						//запись в файл координат объектов и результат мяча
+						String data = String.valueOf(bucketNum);
+
+						// строка для записи
+						File log = new File("data.txt");
+
+						try{
+							if(!log.exists()){
+								System.out.println("We had to make a new file.");
+								log.createNewFile();
+							}
+
+							FileWriter fileWriter = new FileWriter(log, true);
+
+
+							Gson gson = new Gson();
+							result.results = Integer.parseInt(data);
+							String json = gson.toJson(result);
+							BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+							bufferedWriter.write(json + " ");
+							bufferedWriter.close();
+
+
+//							System.exit(2);
+							System.out.println("Done");
+						} catch(IOException e) {
+							System.out.println("COULD NOT LOG!!");
+						}
+
+						gameResult.add(j+1);
+						//this.stop();
+					}
 				}
 			}
 		}
+
+
 
 	}
 
@@ -175,6 +296,8 @@ public class Bucket extends SimulationFrame {
 	public static void main(String[] args) {
 		Bucket simulation = new Bucket();
 		simulation.run();
+
+
 	}
 
 	private double[][] randomGeneratorOfCoordinates(int amountOfCoordinates){
@@ -222,6 +345,8 @@ public class Bucket extends SimulationFrame {
 	}
 
 	private Vector2[][] randomGeneratorOfObjectVectors(int amountOfCoordinates) {
+
+
 		Random r = new Random(new Date().getTime());
 		double xmin = -10.0;
 		double xmax = 10.0;
@@ -230,21 +355,67 @@ public class Bucket extends SimulationFrame {
 
 		ArrayList<Vector2[]> list = new ArrayList<Vector2[]>();
 
+
+		File log = new File("data.txt");
+
+		try{
+			if(!log.exists()){
+				System.out.println("We had to make a new file.");
+				log.createNewFile();
+			}
+
+			FileWriter fileWriter = new FileWriter(log, true);
+
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+			bufferedWriter.write("\n");
+			bufferedWriter.close();
+
+			System.out.println("Done");
+		} catch(IOException e) {
+			System.out.println("COULD NOT LOG!!");
+		}
+
+		Map map = new Map();
+		result.map = map;
+		map.lines = new ArrayList<>();
+
 		for (int i=0; i < amountOfCoordinates; i++) {
 			Vector2 firstVec;
 			Vector2 secondVec;
 
 				double x = r.nextDouble() * xmax * 2 + xmin;
 				double y = r.nextDouble() * ymax + ymin;
-				firstVec = new Vector2(x, y);
+				firstVec = new Vector2(x , y);
 
 				double xX = r.nextDouble() * xmax * 2 + xmin;
 				double yY = r.nextDouble() * ymax + ymin;
-				secondVec = new Vector2(xX, yY);
+				secondVec = new Vector2(xX , yY);
 
+
+				map.lines.add(new Line(new Dot(x,y),new Dot(xX, yY)));
 
 			list.add(new Vector2[]{firstVec, secondVec});
 		}
+
+//		try{
+//			if(!log.exists()){
+//				System.out.println("We had to make a new file.");
+//				log.createNewFile();
+//			}
+//
+//			FileWriter fileWriter = new FileWriter(log, true);
+//			Gson gson = new Gson();
+//			String json = gson.toJson(m);
+//
+//			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+//			bufferedWriter.write(json);
+//			bufferedWriter.write("\n");
+//			bufferedWriter.close();
+//
+//			System.out.println("Done");
+//		} catch(IOException e) {
+//			System.out.println("COULD NOT LOG!!");
+//		}
 
 		Vector2[][] objects = new Vector2[list.size()][2];
 		for (int i=0; i < objects.length; i++){
@@ -254,13 +425,13 @@ public class Bucket extends SimulationFrame {
 		return objects;
 	}
 
-	private void objectsGeneratorBasedOnVectors(Vector2[][] vectors) {
+	private void objectsGeneratorBasedOnVectors(Vector2[][] vectors, int coef) {
 		int size = vectors.length;
 
 		for (int i=0; i < size; i++) {
 			Vector2[] vec = new Vector2[2];
-			vec[0] = vectors[i][0];
-			vec[1] = vectors[i][1];
+			vec[0] = new Vector2(vectors[i][0].x + coef, vectors[i][0].y);
+			vec[1] = new Vector2( vectors[i][1].x + coef,  vectors[i][1].y);
 
 			List<Link> links = Geometry.createLinks(
 					vec
@@ -276,9 +447,9 @@ public class Bucket extends SimulationFrame {
 		}
 	}
 
-	private void bucketsGenerator(int countOfBackets){
-		final double coordinateOfStartBuckets = -10.75;
-		final double coordinateOfEndBuckets = 10.75;
+	private void bucketsGenerator(int countOfBackets, int coef){
+		final double coordinateOfStartBuckets = -10.75 + coef;
+		final double coordinateOfEndBuckets = 10.75 + coef;
 		final double minWidthOfBucket = 1.3;
 
 		final double topOfBucket = -0.6;

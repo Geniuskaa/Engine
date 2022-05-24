@@ -55,16 +55,17 @@ public class Bucket extends SimulationFrame {
 
 	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
 //	private static SimulationBody ball;
-	private static final Integer countOfSimulations = 7;
+	private static final Integer countOfSimulations = 1001;
 	private static SimulationBody[] balls = new SimulationBody[countOfSimulations];
 
 	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
 	private static ArrayList<Integer> gameResult = new ArrayList<>();
-	private static final Integer countOfbackets = 6;
+	private static final Integer countOfbackets = 5;
 	private static Result result = new Result();
 
 
 	private static final Integer BASE_INDENT = 25;
+	private static final Integer BALL_DIAMETR = 1;
 	/**
 	 * Default constructor.
 	 */
@@ -133,7 +134,7 @@ public class Bucket extends SimulationFrame {
 //		this.world.setGravity(new Vector2(0, -3.0)); // Пока не нашел функцию изменения импулься шарика, поэтому пока можно изменять гравитацию
 		// UPD: Нашел функцию для изменения начального импульса, тогда не придется менять гравитацию по умолчанию будет земной
 
-		Vector2[][] vectors = randomGeneratorOfObjectVectors(3);
+
 		for (int i=1; i<countOfSimulations; i++){
 
 			int indent = BASE_INDENT*i;
@@ -180,6 +181,7 @@ public class Bucket extends SimulationFrame {
 
 
 
+			Vector2[][] vectors = randomGeneratorOfObjectVectors(3);
 			// Подходящая под условия Сергея версия
 			objectsGeneratorBasedOnVectors(vectors, indent);
 
@@ -206,7 +208,7 @@ public class Bucket extends SimulationFrame {
 
 
 			// Блок кода с генерацией щара
-			final double size = 1; // диаметр шара
+			final double size = BALL_DIAMETR; // диаметр шара
 
 			Convex c = null;
 			c = Geometry.createCircle(size * 0.5); // Создание шара
@@ -229,7 +231,6 @@ public class Bucket extends SimulationFrame {
 	@Override
 	protected void handleEvents() {
 		super.handleEvents();
-
 
 
 		for (int i=0; i < countOfSimulations; i++){
@@ -273,7 +274,6 @@ public class Bucket extends SimulationFrame {
 
 
 //							System.exit(2);
-							System.out.println("Done");
 						} catch(IOException e) {
 							System.out.println("COULD NOT LOG!!");
 						}
@@ -356,46 +356,74 @@ public class Bucket extends SimulationFrame {
 		ArrayList<Vector2[]> list = new ArrayList<Vector2[]>();
 
 
-		File log = new File("data.txt");
-
-		try{
-			if(!log.exists()){
-				System.out.println("We had to make a new file.");
-				log.createNewFile();
-			}
-
-			FileWriter fileWriter = new FileWriter(log, true);
-
-			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-			bufferedWriter.write("\n");
-			bufferedWriter.close();
-
-			System.out.println("Done");
-		} catch(IOException e) {
-			System.out.println("COULD NOT LOG!!");
-		}
+//		File log = new File("data.txt");
+//
+//		try{
+//			if(!log.exists()){
+//				System.out.println("We had to make a new file.");
+//				log.createNewFile();
+//			}
+//
+//			FileWriter fileWriter = new FileWriter(log, true);
+//
+//			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+//			bufferedWriter.write("\n");
+//			bufferedWriter.close();
+//
+//		} catch(IOException e) {
+//			System.out.println("COULD NOT LOG!!");
+//		}
 
 		Map map = new Map();
 		result.map = map;
 		map.lines = new ArrayList<>();
 
-		for (int i=0; i < amountOfCoordinates; i++) {
+		int j= amountOfCoordinates;
+		while (j != 0){
 			Vector2 firstVec;
 			Vector2 secondVec;
 
-				double x = r.nextDouble() * xmax * 2 + xmin;
-				double y = r.nextDouble() * ymax + ymin;
-				firstVec = new Vector2(x , y);
+			double x = r.nextDouble() * xmax * 2 + xmin;
+			double y = r.nextDouble() * ymax + ymin;
+			firstVec = new Vector2(x , y);
 
-				double xX = r.nextDouble() * xmax * 2 + xmin;
-				double yY = r.nextDouble() * ymax + ymin;
-				secondVec = new Vector2(xX , yY);
+			double xX = r.nextDouble() * xmax * 2 + xmin;
+			double yY = r.nextDouble() * ymax + ymin;
+			secondVec = new Vector2(xX , yY);
+
+			if(list.size() > 0){
+				boolean everythingOkay = false;
+				for(int i=0; i < list.size(); i++){
+					Vector2[] line = list.get(i);
+
+					if(firstVec.x < line[0].x && secondVec.x < line[0].x && (line[0].x - firstVec.x >= BALL_DIAMETR) && (line[0].x - secondVec.x >= BALL_DIAMETR)){
+						everythingOkay = true;
+					}else if(firstVec.x > line[1].x && secondVec.x > line[1].x && (firstVec.x - line[1].x >= BALL_DIAMETR) && (secondVec.x - line[1].x >= BALL_DIAMETR)){
+						everythingOkay = true;
+					}else {
+						everythingOkay = false;
+						break;
+					}
+				}
+
+				if(!everythingOkay){
+					continue;
+				}
+			}
 
 
+
+			if(firstVec.x > secondVec.x){
 				map.lines.add(new Line(new Dot(x,y),new Dot(xX, yY)));
+				list.add(new Vector2[]{secondVec, firstVec});
+			}else {
+				map.lines.add(new Line(new Dot(x,y),new Dot(xX, yY)));
+				list.add(new Vector2[]{firstVec, secondVec});
+			}
 
-			list.add(new Vector2[]{firstVec, secondVec});
+			j--;
 		}
+
 
 //		try{
 //			if(!log.exists()){

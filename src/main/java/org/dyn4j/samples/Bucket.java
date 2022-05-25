@@ -55,7 +55,7 @@ public class Bucket extends SimulationFrame {
 
 	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
 //	private static SimulationBody ball;
-	private static final Integer countOfSimulations = 501;
+	private static final Integer countOfSimulations = 51;
 	private static SimulationBody[] balls = new SimulationBody[countOfSimulations];
 
 	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
@@ -173,6 +173,30 @@ public class Bucket extends SimulationFrame {
 			rightHelper.setMass(MassType.INFINITE);
 			world.addBody(rightHelper);
 
+
+			SimulationBody firstHelper = new SimulationBody();
+			firstHelper.addFixture(Geometry.createRectangle(0.8, 1.5));
+			firstHelper.translate(new Vector2(-6.5 + indent, -1.8));
+			firstHelper.setMass(MassType.INFINITE);
+			world.addBody(firstHelper);
+
+			SimulationBody secondHelper = new SimulationBody();
+			secondHelper.addFixture(Geometry.createRectangle(0.8, 1.5));
+			secondHelper.translate(new Vector2(-2.2 + indent, -1.8));
+			secondHelper.setMass(MassType.INFINITE);
+			world.addBody(secondHelper);
+
+			SimulationBody fourthHelper = new SimulationBody();
+			fourthHelper.addFixture(Geometry.createRectangle(0.8, 1.5));
+			fourthHelper.translate(new Vector2(2.1 + indent, -1.8));
+			fourthHelper.setMass(MassType.INFINITE);
+			world.addBody(fourthHelper);
+
+			SimulationBody thirdHelper = new SimulationBody();
+			thirdHelper.addFixture(Geometry.createRectangle(0.8, 1.5));
+			thirdHelper.translate(new Vector2(6.4 + indent, -1.8));
+			thirdHelper.setMass(MassType.INFINITE);
+			world.addBody(thirdHelper);
 
 
 
@@ -383,9 +407,9 @@ public class Bucket extends SimulationFrame {
 	private Vector2[][] randomGeneratorOfObjectVectors(int amountOfCoordinates) {
 
 
-		Random r = new Random(new Date().getTime());
-		double xmin = -9.2;
-		double xmax = 9.2;
+		Random r = new Random(); //new Date().getTime()
+		double xmin = -9.0;
+		double xmax = 9.0;
 		double ymin = 1.0;
 		double ymax = 15.0;
 
@@ -420,12 +444,12 @@ public class Bucket extends SimulationFrame {
 			Vector2 firstVec;
 			Vector2 secondVec;
 
-			double x = r.nextDouble() * xmax * 2 + xmin;
-			double y = r.nextDouble() * ymax + ymin;
+			Double x = r.nextDouble() * xmax * 2 + xmin;
+			Double y = r.nextDouble() * ymax + ymin;
 			firstVec = new Vector2(x , y);
 
-			double xX = r.nextDouble() * xmax * 2 + xmin;
-			double yY = r.nextDouble() * ymax + ymin;
+			Double xX = r.nextDouble() * xmax * 2 + xmin;
+			Double yY = r.nextDouble() * ymax + ymin;
 			secondVec = new Vector2(xX , yY);
 
 			if(list.size() > 0){

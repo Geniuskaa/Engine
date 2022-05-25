@@ -55,13 +55,15 @@ public class Bucket extends SimulationFrame {
 
 	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
 //	private static SimulationBody ball;
-	private static final Integer countOfSimulations = 1001;
+	private static final Integer countOfSimulations = 501;
 	private static SimulationBody[] balls = new SimulationBody[countOfSimulations];
 
 	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
 	private static ArrayList<Integer> gameResult = new ArrayList<>();
 	private static final Integer countOfbackets = 5;
-	private static Result result = new Result();
+	private static Result result;
+	private static List<Result> results = new ArrayList<>();
+	private static Integer checker = 0;
 
 
 	private static final Integer BASE_INDENT = 25;
@@ -249,42 +251,76 @@ public class Bucket extends SimulationFrame {
 
 						ball.translate(-25,10); // - BASE_INDENT*(j/countOfbackets)
 						ball.setEnabled(false);
+						checker++;
+
+						System.out.println(checker);
 
 						//запись в файл координат объектов и результат мяча
 						String data = String.valueOf(bucketNum);
 
 						// строка для записи
-						File log = new File("data.txt");
+//						File log = new File("data.txt");
+//
+//						try{
+//							if(!log.exists()){
+//								System.out.println("We had to make a new file.");
+//								log.createNewFile();
+//							}
+//
+//							FileWriter fileWriter = new FileWriter(log, true);
 
-						try{
-							if(!log.exists()){
-								System.out.println("We had to make a new file.");
-								log.createNewFile();
+
+//							Gson gson = new Gson();
+							if(i < countOfSimulations){
+								Result r = results.get(i-1);
+								r.results = Integer.parseInt(data);
+								results.set(i-1, r);
 							}
 
-							FileWriter fileWriter = new FileWriter(log, true);
+//							result.results = Integer.parseInt(data);
+
+//							String json = gson.toJson(result);
+//							BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+//							bufferedWriter.write(json + " ");
+//							bufferedWriter.close();
+//
+//
+////							System.exit(2);
+//						} catch(IOException e) {
+//							System.out.println("COULD NOT LOG!!");
+//						}
 
 
-							Gson gson = new Gson();
-							result.results = Integer.parseInt(data);
-							String json = gson.toJson(result);
-							BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-							bufferedWriter.write(json + " ");
-							bufferedWriter.close();
+						if(checker == (countOfSimulations - 1)){
+							File log = new File("data.txt");
+
+							try{
+								if(!log.exists()){
+									System.out.println("We had to make a new file.");
+									log.createNewFile();
+								}
+
+								FileWriter fileWriter = new FileWriter(log, true);
 
 
-//							System.exit(2);
-						} catch(IOException e) {
-							System.out.println("COULD NOT LOG!!");
+								Gson gson = new Gson();
+								String json = gson.toJson(results);
+								BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+								bufferedWriter.write(json + "\n");
+								bufferedWriter.close();
+
+
+							} catch(IOException e) {
+								System.out.println("COULD NOT LOG!!");
+							}
+
 						}
-
 						gameResult.add(j+1);
 						//this.stop();
 					}
 				}
 			}
 		}
-
 
 
 	}
@@ -348,8 +384,8 @@ public class Bucket extends SimulationFrame {
 
 
 		Random r = new Random(new Date().getTime());
-		double xmin = -10.0;
-		double xmax = 10.0;
+		double xmin = -9.2;
+		double xmax = 9.2;
 		double ymin = 1.0;
 		double ymax = 15.0;
 
@@ -374,8 +410,9 @@ public class Bucket extends SimulationFrame {
 //			System.out.println("COULD NOT LOG!!");
 //		}
 
+		Result res = new Result();
 		Map map = new Map();
-		result.map = map;
+		res.map = map;
 		map.lines = new ArrayList<>();
 
 		int j= amountOfCoordinates;
@@ -444,6 +481,8 @@ public class Bucket extends SimulationFrame {
 //		} catch(IOException e) {
 //			System.out.println("COULD NOT LOG!!");
 //		}
+
+		results.add(res);
 
 		Vector2[][] objects = new Vector2[list.size()][2];
 		for (int i=0; i < objects.length; i++){

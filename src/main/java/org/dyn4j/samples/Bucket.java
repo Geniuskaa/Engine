@@ -55,7 +55,7 @@ public class Bucket extends SimulationFrame {
 
 	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
 //	private static SimulationBody ball;
-	private static final Integer countOfSimulations = 51;
+	private static final Integer countOfSimulations = 10001;
 	private static SimulationBody[] balls = new SimulationBody[countOfSimulations];
 
 	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
@@ -406,8 +406,8 @@ public class Bucket extends SimulationFrame {
 
 	private Vector2[][] randomGeneratorOfObjectVectors(int amountOfCoordinates) {
 
-
 		Random r = new Random(); //new Date().getTime()
+
 		double xmin = -9.0;
 		double xmax = 9.0;
 		double ymin = 1.0;
@@ -439,7 +439,7 @@ public class Bucket extends SimulationFrame {
 		res.map = map;
 		map.lines = new ArrayList<>();
 
-		int j= amountOfCoordinates;
+		int j = amountOfCoordinates;
 		while (j != 0){
 			Vector2 firstVec;
 			Vector2 secondVec;
@@ -461,13 +461,29 @@ public class Bucket extends SimulationFrame {
 						everythingOkay = true;
 					}else if(firstVec.x > line[1].x && secondVec.x > line[1].x && (firstVec.x - line[1].x >= BALL_DIAMETR) && (secondVec.x - line[1].x >= BALL_DIAMETR)){
 						everythingOkay = true;
+					}else if(firstVec.y < line[0].y && firstVec.y < line[1].y && secondVec.y < line[0].y && secondVec.y < line[1].y &&
+							(line[0].y - firstVec.y >= BALL_DIAMETR) && (line[0].y - secondVec.y >= BALL_DIAMETR) &&
+							(line[1].y - firstVec.y >= BALL_DIAMETR) && (line[1].y - secondVec.y >= BALL_DIAMETR)) {
+						everythingOkay = true;
+					}else if(firstVec.y > line[0].y && firstVec.y > line[1].y && secondVec.y > line[0].y && secondVec.y > line[1].y &&
+							(firstVec.y - line[1].y >= BALL_DIAMETR) && (secondVec.y - line[1].y >= BALL_DIAMETR) &&
+							(firstVec.y - line[0].y >= BALL_DIAMETR) && (secondVec.y - line[0].y >= BALL_DIAMETR)){
+						everythingOkay = true;
 					}else {
 						everythingOkay = false;
 						break;
 					}
 				}
 
+				System.out.println(j);
 				if(!everythingOkay){
+//					j--;
+//					try {
+//						Thread.sleep(2);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//					r = new Random(new Date().getTime());
 					continue;
 				}
 			}

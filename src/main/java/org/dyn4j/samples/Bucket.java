@@ -55,7 +55,7 @@ public class Bucket extends SimulationFrame {
 
 	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
 //	private static SimulationBody ball;
-	private static final Integer countOfSimulations = 10001;
+	private static final Integer countOfSimulations = 18001;
 	private static SimulationBody[] balls = new SimulationBody[countOfSimulations];
 
 	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
@@ -64,6 +64,7 @@ public class Bucket extends SimulationFrame {
 	private static Result result;
 	private static List<Result> results = new ArrayList<>();
 	private static Integer checker = 0;
+	private static final List<Result> resultsValidated = new ArrayList<>();
 
 
 	private static final Integer BASE_INDENT = 25;
@@ -111,6 +112,7 @@ public class Bucket extends SimulationFrame {
 	}
 
 	protected void initializeWorld() {
+		
 
 		SimulationBody b = new SimulationBody();
 		b.addFixture(Geometry.createRectangle(28.5, 0.5)); // ширина нижнего пола
@@ -254,99 +256,73 @@ public class Bucket extends SimulationFrame {
 
 	}
 
+	boolean isFinished = false;
+
 	@Override
 	protected void handleEvents() {
 		super.handleEvents();
 
+		for (int i = 0; i < countOfSimulations; i++) {
 
-		for (int i=0; i < countOfSimulations; i++){
 			SimulationBody ball = balls[i];
 
-			if(ball == null) continue;
-
+			if (ball == null || isFinished) continue;
 
 			if (ball.getWorldCenter().y < -1) {
 				int n = checkBox.size();
 
-				for (int j=0; j < n; j++){
+				for (int j = 0; j < n; j++) {
 					if (checkBox.get(j)[0].x <= ball.getWorldCenter().x && ball.getWorldCenter().x <= checkBox.get(j)[1].x) {
-						Integer bucketNum = j%countOfbackets+1;
-						System.out.println("Мяч попал в стакан номер: " + bucketNum); // Здесь сделать вывод как и куда удобно
+						Integer bucketNum = j % countOfbackets + 1;
+						//System.out.println("Мяч попал в стакан номер: " + bucketNum); // Здесь сделать вывод как и куда удобно
 
-						ball.translate(-25,10); // - BASE_INDENT*(j/countOfbackets)
+						ball.translate(-25, 10); // - BASE_INDENT*(j/countOfbackets)
 						ball.setEnabled(false);
 						checker++;
 
-						System.out.println(checker);
+						System.out.println("Progress: " + ((float) checker / countOfSimulations * 100) + "%");
 
 						//запись в файл координат объектов и результат мяча
 						String data = String.valueOf(bucketNum);
 
-						// строка для записи
-//						File log = new File("data.txt");
-//
-//						try{
-//							if(!log.exists()){
-//								System.out.println("We had to make a new file.");
-//								log.createNewFile();
-//							}
-//
-//							FileWriter fileWriter = new FileWriter(log, true);
+						if (i < countOfSimulations) {
+							Result r = results.get(i - 1);
+							r.results = Integer.parseInt(data);
+							results.set(i - 1, r);
+						}
 
-
-//							Gson gson = new Gson();
-							if(i < countOfSimulations){
-								Result r = results.get(i-1);
-								r.results = Integer.parseInt(data);
-								results.set(i-1, r);
-							}
-
-//							result.results = Integer.parseInt(data);
-
-//							String json = gson.toJson(result);
-//							BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-//							bufferedWriter.write(json + " ");
-//							bufferedWriter.close();
-//
-//
-////							System.exit(2);
-//						} catch(IOException e) {
-//							System.out.println("COULD NOT LOG!!");
-//						}
-
-
-						if(checker == (countOfSimulations - 1)){
+						if (checker > countOfSimulations * 0.9) {
+							this.stop();
+							isFinished = true;
 							File log = new File("data.txt");
 
-							try{
-								if(!log.exists()){
+							try {
+								if (!log.exists()) {
 									System.out.println("We had to make a new file.");
 									log.createNewFile();
 								}
 
 								FileWriter fileWriter = new FileWriter(log, true);
 
+								for (Result result : results) {
+									if (result.results != null) resultsValidated.add(result);
+								}
 
 								Gson gson = new Gson();
-								String json = gson.toJson(results);
+								String json = gson.toJson(resultsValidated);
 								BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 								bufferedWriter.write(json + "\n");
 								bufferedWriter.close();
-
-
-							} catch(IOException e) {
+							} catch (IOException e) {
 								System.out.println("COULD NOT LOG!!");
 							}
-
+							System.out.println("Finish");
 						}
-						gameResult.add(j+1);
-						//this.stop();
+						gameResult.add(j + 1);
 					}
 				}
 			}
 		}
-
-
 	}
 
 	/**
@@ -475,7 +451,6 @@ public class Bucket extends SimulationFrame {
 					}
 				}
 
-				System.out.println(j);
 				if(!everythingOkay){
 //					j--;
 //					try {

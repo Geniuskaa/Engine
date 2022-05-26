@@ -24,7 +24,8 @@
  */
 package org.dyn4j.samples;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.*;
@@ -33,6 +34,10 @@ import org.dyn4j.samples.framework.SimulationFrame;
 
 import java.io.*;
 
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -55,8 +60,8 @@ public class Bucket extends SimulationFrame {
 
 	private static final Vector2 ballCoordinates = new Vector2(0.0,24.0);
 //	private static SimulationBody ball;
-	private static final Integer countOfSimulations = 18001;
-	private static SimulationBody[] balls = new SimulationBody[countOfSimulations];
+	private static final Integer countOfSimulations = 11;
+	private static SimulationBody[] balls;
 
 	private static final ArrayList<Vector2[]> checkBox = new ArrayList<Vector2[]>();
 	private static ArrayList<Integer> gameResult = new ArrayList<>();
@@ -66,7 +71,10 @@ public class Bucket extends SimulationFrame {
 	private static Integer checker = 0;
 	private static final List<Result> resultsValidated = new ArrayList<>();
 
+	private static String visualization; // "[{\"map\":{\"lines\":[{\"dot1\":{\"x\":-6.422906268704261,\"y\":14.730467016267111},\"dot2\":{\"x\":4.983574073054616,\"y\":2.84022009708447}},{\"dot1\":{\"x\":0.13738738992197064,\"y\":1.7828100595495957},\"dot2\":{\"x\":3.95880578573008,\"y\":1.0295292241098104}},{\"dot1\":{\"x\":8.848728339547986,\"y\":11.087171442435888},\"dot2\":{\"x\":7.625723589058946,\"y\":3.2907144977177216}}]},\"results\":5}," +
+			//"{\"map\":{\"lines\":[{\"dot1\":{\"x\":-7.702907563656737,\"y\":9.437486973245552},\"dot2\":{\"x\":2.125304196710511,\"y\":14.1825206119878}},{\"dot1\":{\"x\":7.006990042938682,\"y\":2.6063984521670887},\"dot2\":{\"x\":5.611580272326142,\"y\":7.478777799288546}},{\"dot1\":{\"x\":3.4208826703505277,\"y\":1.1800640521780417},\"dot2\":{\"x\":-3.147120315459281,\"y\":2.6528756002044496}}]},\"results\":1}]";
 
+	private static List<Result> outputList;
 	private static final Integer BASE_INDENT = 25;
 	private static final Integer BALL_DIAMETR = 1;
 	/**
@@ -111,8 +119,35 @@ public class Bucket extends SimulationFrame {
 		Integer results;
 	}
 
+
 	protected void initializeWorld() {
-		
+
+
+		Path path = Paths.get("C:\\code\\Java\\AI project\\dyn4j-samples\\data.txt");
+
+		BufferedReader reader = null;
+		try {
+			reader = Files.newBufferedReader(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		String line = null;
+		try {
+			line = reader.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		visualization = line;
+
+		java.lang.reflect.Type listOfMyClassObject = new TypeToken<ArrayList<Result>>() {}.getType();
+
+		Gson gson = new Gson();
+		outputList = gson.fromJson(visualization, listOfMyClassObject);
+
+		balls = new SimulationBody[outputList.size()];
+
 
 		SimulationBody b = new SimulationBody();
 		b.addFixture(Geometry.createRectangle(28.5, 0.5)); // ширина нижнего пола
@@ -139,7 +174,7 @@ public class Bucket extends SimulationFrame {
 		// UPD: Нашел функцию для изменения начального импульса, тогда не придется менять гравитацию по умолчанию будет земной
 
 
-		for (int i=1; i<countOfSimulations; i++){
+		for (int i=0; i<outputList.size(); i++){
 
 			int indent = BASE_INDENT*i;
 			// Bottom
@@ -207,9 +242,11 @@ public class Bucket extends SimulationFrame {
 			// Версия с объектами с одинарной координатой
 //		objectsGenerator(objects); // массив содержит в себе 3 значения: 1) X координата, 2) Y координата, 3) Угол поворота
 
-
-
-			Vector2[][] vectors = randomGeneratorOfObjectVectors(3);
+			Vector2[][] vectors = new Vector2[3][2];
+			for (int h=0; h < 3; h++){
+				vectors[h][0] = new Vector2(outputList.get(i).map.lines.get(h).dot1.x, outputList.get(i).map.lines.get(h).dot1.y);
+				vectors[h][1] = new Vector2(outputList.get(i).map.lines.get(h).dot2.x, outputList.get(i).map.lines.get(h).dot2.y);
+			}
 			// Подходящая под условия Сергея версия
 			objectsGeneratorBasedOnVectors(vectors, indent);
 
@@ -262,7 +299,8 @@ public class Bucket extends SimulationFrame {
 	protected void handleEvents() {
 		super.handleEvents();
 
-		for (int i = 0; i < countOfSimulations; i++) {
+
+		for (int i = 0; i < outputList.size(); i++) {
 
 			SimulationBody ball = balls[i];
 
@@ -274,48 +312,22 @@ public class Bucket extends SimulationFrame {
 				for (int j = 0; j < n; j++) {
 					if (checkBox.get(j)[0].x <= ball.getWorldCenter().x && ball.getWorldCenter().x <= checkBox.get(j)[1].x) {
 						Integer bucketNum = j % countOfbackets + 1;
-						//System.out.println("Мяч попал в стакан номер: " + bucketNum); // Здесь сделать вывод как и куда удобно
+						System.out.println("Мяч номер " +  (i+1) + " попал в стакан номер: " + bucketNum); // Здесь сделать вывод как и куда удобно
 
 						ball.translate(-25, 10); // - BASE_INDENT*(j/countOfbackets)
 						ball.setEnabled(false);
 						checker++;
 
-						System.out.println("Progress: " + ((float) checker / countOfSimulations * 100) + "%");
-
 						//запись в файл координат объектов и результат мяча
 						String data = String.valueOf(bucketNum);
 
-						if (i < countOfSimulations) {
-							Result r = results.get(i - 1);
-							r.results = Integer.parseInt(data);
-							results.set(i - 1, r);
-						}
 
-						if (checker > countOfSimulations * 0.9) {
+
+						if (checker > outputList.size() * 0.95) {
 							this.stop();
 							isFinished = true;
-							File log = new File("data.txt");
 
-							try {
-								if (!log.exists()) {
-									System.out.println("We had to make a new file.");
-									log.createNewFile();
-								}
 
-								FileWriter fileWriter = new FileWriter(log, true);
-
-								for (Result result : results) {
-									if (result.results != null) resultsValidated.add(result);
-								}
-
-								Gson gson = new Gson();
-								String json = gson.toJson(resultsValidated);
-								BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-								bufferedWriter.write(json + "\n");
-								bufferedWriter.close();
-							} catch (IOException e) {
-								System.out.println("COULD NOT LOG!!");
-							}
 							System.out.println("Finish");
 						}
 						gameResult.add(j + 1);
